@@ -71,9 +71,13 @@ export default {
       this.selectedCategory = 'All';
     },
     clearArea() {
-      this.selectedArea = null;
-      this.query = '';
-      this.selectedCategory = 'All';
+      if (!this.selectedArea) {
+        this.$router.push('/');
+      } else {
+        this.selectedArea = null;
+        this.query = '';
+        this.selectedCategory = 'All';
+      }
     },
     setCategory(cat) {
       this.selectedCategory = cat;
