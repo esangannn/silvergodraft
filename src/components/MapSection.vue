@@ -11,9 +11,14 @@
   </section>
 </template>
 
-<script setup lang="ts">
-const handleOK = () => {
-  console.log('Map OK button clicked');
+<script>
+export default {
+  name: 'MapSection',
+  methods: {
+    handleOK() {
+      console.log('Map OK button clicked');
+    }
+  }
 };
 </script>
 

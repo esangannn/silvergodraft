@@ -1,40 +1,16 @@
-<script setup lang="ts">
-import { User, Globe, Heart } from 'lucide-vue-next';
-import LandingHero from './components/LandingHero.vue';
-import SearchBar from './components/SearchBar.vue';
-import MapSection from './components/MapSection.vue';
-import PlacesList from './components/PlacesList.vue';
-</script>
-
 <template>
   <div id="app">
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-name">Silver<span class="go">Go</span></span>
-        <small>Singapore</small>
-      </div>
-      <div class="top-actions">
-        <button class="btn-outline" aria-label="Login">
-          <User :size="20" />
-          <span>Log In</span>
-        </button>
-        <button class="btn-icon" title="Language">
-          <Globe :size="20" />
-        </button>
-        <button class="btn-heart" title="Favourites">
-          <Heart :size="20" />
-        </button>
-      </div>
-    </header>
-
-    <main class="content">
-      <LandingHero />
-      <SearchBar />
-      <MapSection />
-      <PlacesList />
-    </main>
+    <router-view />
   </div>
 </template>
+
+<style scoped>
+#app {
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #fff8f3;
+}
+</style>
 
 <style scoped>
 #app {

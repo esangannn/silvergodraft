@@ -18,14 +18,21 @@
   </section>
 </template>
 
-<script setup lang="ts">
+<script>
 import { ref } from 'vue';
 import { MapPin } from 'lucide-vue-next';
 
-const query = ref('');
-
-const handleLocate = () => {
-  console.log('Locate button clicked');
+export default {
+  name: 'SearchBar',
+  components: { MapPin },
+  data() {
+    return { query: '' };
+  },
+  methods: {
+    handleLocate() {
+      console.log('Locate button clicked');
+    }
+  }
 };
 </script>
 

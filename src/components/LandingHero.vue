@@ -1,5 +1,6 @@
-<script setup lang="ts">
+<script>
 import { Home, Stethoscope, Users, Activity, ChevronRight } from 'lucide-vue-next';
+export default { name: 'LandingHero', components: { Home, Stethoscope, Users, Activity, ChevronRight } };
 </script>
 
 <template>
@@ -45,7 +46,7 @@ import { Home, Stethoscope, Users, Activity, ChevronRight } from 'lucide-vue-nex
   </section>
 </template>
 
-<script setup lang="ts"></script>
+<script></script>
 
 <style scoped>
 .hero-section {

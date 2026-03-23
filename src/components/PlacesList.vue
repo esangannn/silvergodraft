@@ -30,48 +30,40 @@
   </section>
 </template>
 
-<script setup lang="ts">
+<script>
 import { ref, computed } from 'vue';
 import { MapPin, Heart, Stethoscope, Home, Users, Activity } from 'lucide-vue-next';
 
-type IconType = 'stethoscope' | 'hospital' | 'users' | 'activity';
-
-interface Place {
-  id: number;
-  name: string;
-  type: string;
-  address: string;
-  distance: string;
-  rating: string;
-  status: string;
-  iconType: IconType;
-  badge: string;
-  color: string;
-}
-
-const places = ref<Place[]>([
-  { id: 1, name: 'Ang Mo Kio Polyclinic', type: 'Polyclinic', address: '21 Ang Mo Kio Central 2, #01-01', distance: '1.2 km', rating: '4.2/5', status: 'Not Crowded', iconType: 'stethoscope', badge: 'Wheelchair Access', color: '#ff7f50' },
-  { id: 2, name: 'Tan Tock Seng Hospital', type: 'Hospital', address: '11 Jalan Tan Tock Seng', distance: '2.5 km', rating: '4.5/5', status: 'Busy', iconType: 'hospital', badge: 'Wheelchair Access', color: '#ff7f50' },
-  { id: 3, name: 'Bishan Community Club', type: 'Community Centre', address: '51 Bishan Street 13', distance: '0.8 km', rating: '4.3/5', status: 'Not Crowded', iconType: 'users', badge: 'Wheelchair Access', color: '#64b5f6' },
-  { id: 4, name: 'Toa Payoh Active Ageing Centre', type: 'Active Ageing Centre', address: 'Block 93 Toa Payoh Lorong 4, #01-324', distance: '1.9 km', rating: '4.1/5', status: 'Moderate', iconType: 'activity', badge: 'Wheelchair Access', color: '#64b5f6' }
-]);
-
-const getIcon = (iconType: IconType) => {
-  switch (iconType) {
-    case 'stethoscope':
-      return Stethoscope;
-    case 'hospital':
-      return Home;
-    case 'users':
-      return Users;
-    case 'activity':
-      return Activity;
-    default:
-      return Home;
+export default {
+  name: 'PlacesList',
+  components: { MapPin, Heart, Stethoscope, Home, Users, Activity },
+  data() {
+    return {
+      places: [
+        { id: 1, name: 'Ang Mo Kio Polyclinic', type: 'Polyclinic', address: '21 Ang Mo Kio Central 2, #01-01', distance: '1.2 km', rating: '4.2/5', status: 'Not Crowded', iconType: 'stethoscope', badge: 'Wheelchair Access', color: '#ff7f50' },
+        { id: 2, name: 'Tan Tock Seng Hospital', type: 'Hospital', address: '11 Jalan Tan Tock Seng', distance: '2.5 km', rating: '4.5/5', status: 'Busy', iconType: 'hospital', badge: 'Wheelchair Access', color: '#ff7f50' },
+        { id: 3, name: 'Bishan Community Club', type: 'Community Centre', address: '51 Bishan Street 13', distance: '0.8 km', rating: '4.3/5', status: 'Not Crowded', iconType: 'users', badge: 'Wheelchair Access', color: '#64b5f6' },
+        { id: 4, name: 'Toa Payoh Active Ageing Centre', type: 'Active Ageing Centre', address: 'Block 93 Toa Payoh Lorong 4, #01-324', distance: '1.9 km', rating: '4.1/5', status: 'Moderate', iconType: 'activity', badge: 'Wheelchair Access', color: '#64b5f6' }
+      ]
+    };
+  },
+  computed: {
+    filteredPlaces() {
+      return this.places;
+    }
+  },
+  methods: {
+    getIcon(iconType) {
+      const iconMap = {
+        stethoscope: Stethoscope,
+        hospital: Home,
+        users: Users,
+        activity: Activity
+      };
+      return iconMap[iconType] || Home;
+    }
   }
 };
-
-const filteredPlaces = computed(() => places.value);
 </script>
 
 <style scoped>
