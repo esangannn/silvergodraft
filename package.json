@@ -11,14 +11,10 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
-<<<<<<< Updated upstream
-    "vue": "^3.5.29"
-=======
     "firebase": "^12.11.0",
     "lucide-vue-next": "^0.577.0",
     "vue": "^3.5.29",
     "vue-router": "^4.6.4"
->>>>>>> Stashed changes
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
