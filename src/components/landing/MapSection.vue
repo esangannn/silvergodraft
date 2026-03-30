@@ -1,52 +1,181 @@
 <template>
   <section class="map-section" aria-label="Map">
     <div class="map-card">
-      <div class="map-controls" aria-hidden="true">
-        <button class="map-btn" type="button">+</button>
-        <button class="map-btn map-btn--down" type="button">−</button>
+      <div ref="mapCanvas" class="map-canvas" :class="{ 'map-canvas--hidden': Boolean(mapError) }" />
+
+      <div v-if="isLoading && !mapError" class="map-status" role="status" aria-live="polite">
+        Loading map...
       </div>
 
-      <div class="map-pins" aria-hidden="true">
-        <div
-          v-for="pin in pins"
-          :key="pin.id"
-          class="pin"
-          :class="`pin--${pin.tone}`"
-          :style="{ left: `${pin.xPct}%`, top: `${pin.yPct}%` }"
-        />
-      </div>
-
-      <div class="map-error-modal">
-        <div class="google-label">Google</div>
-        <div class="modal-text">This page can't load Google Maps correctly.</div>
-        <div class="modal-text">Do you own this website?</div>
-        <button class="ok-button" type="button" @click="handleOK">OK</button>
+      <div v-if="mapError" class="map-fallback" role="status" aria-live="polite">
+        {{ mapError }}
       </div>
     </div>
   </section>
 </template>
 <script>
+const GOOGLE_MAPS_SCRIPT_ID = 'google-maps-js';
+const SINGAPORE_CENTER = { lat: 1.3521, lng: 103.8198 };
+
+const MOCK_LOCATIONS = [
+  { id: 'ang-mo-kio', name: 'Ang Mo Kio', position: { lat: 1.3691, lng: 103.8454 } },
+  { id: 'bishan', name: 'Bishan', position: { lat: 1.3509, lng: 103.8483 } },
+  { id: 'tampines', name: 'Tampines', position: { lat: 1.3526, lng: 103.9451 } },
+];
+
 export default {
   name: 'MapSection',
   data() {
     return {
-      pins: [
-        { id: 'p1', xPct: 18, yPct: 55, tone: 'green' },
-        { id: 'p2', xPct: 33, yPct: 45, tone: 'purple' },
-        { id: 'p3', xPct: 44, yPct: 58, tone: 'blue' },
-        { id: 'p4', xPct: 52, yPct: 40, tone: 'green' },
-        { id: 'p5', xPct: 61, yPct: 52, tone: 'purple' },
-        { id: 'p6', xPct: 70, yPct: 60, tone: 'green' },
-        { id: 'p7', xPct: 78, yPct: 46, tone: 'purple' },
-        { id: 'p8', xPct: 86, yPct: 55, tone: 'blue' },
-        { id: 'p9', xPct: 91, yPct: 40, tone: 'green' },
-      ],
+      map: null,
+      markers: [],
+      mapError: '',
+      isLoading: false,
+      apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+      restoreAuthFailure: null,
+      mapErrorObserver: null,
     };
   },
+  mounted() {
+    this.initializeMap();
+  },
+  beforeUnmount() {
+    this.teardownMap();
+  },
   methods: {
-    handleOK() {
-      // Placeholder-only; keeps parity with prototype error modal.
-      console.log('Map OK button clicked');
+    async initializeMap() {
+      if (!this.apiKey) {
+        this.mapError = 'Map unavailable — API key not configured';
+        return;
+      }
+
+      this.isLoading = true;
+      this.mapError = '';
+
+      try {
+        this.setAuthFailureHandler();
+        await this.loadGoogleMaps();
+
+        if (!this.$refs.mapCanvas) {
+          return;
+        }
+
+        this.map = new window.google.maps.Map(this.$refs.mapCanvas, {
+          center: SINGAPORE_CENTER,
+          zoom: 12,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        });
+
+        this.markers = MOCK_LOCATIONS.map((location) =>
+          new window.google.maps.Marker({
+            map: this.map,
+            position: location.position,
+            title: location.name,
+          })
+        );
+
+        this.observeGoogleMapErrors();
+      } catch (error) {
+        console.error('Failed to initialize Google Maps:', error);
+        this.mapError = 'Map unavailable — unable to load Google Maps';
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    loadGoogleMaps() {
+      if (window.google && window.google.maps) {
+        return Promise.resolve();
+      }
+
+      const existingScript = document.getElementById(GOOGLE_MAPS_SCRIPT_ID);
+      if (existingScript) {
+        return this.waitForScript(existingScript);
+      }
+
+      const script = document.createElement('script');
+      script.id = GOOGLE_MAPS_SCRIPT_ID;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(this.apiKey)}&v=weekly&loading=async`;
+      script.async = true;
+      script.defer = true;
+
+      document.head.appendChild(script);
+      return this.waitForScript(script);
+    },
+    waitForScript(script) {
+      return new Promise((resolve, reject) => {
+        const onLoad = () => {
+          cleanup();
+          if (window.google && window.google.maps) {
+            resolve();
+            return;
+          }
+          reject(new Error('Google Maps script loaded but API is unavailable.'));
+        };
+
+        const onError = () => {
+          cleanup();
+          reject(new Error('Google Maps script failed to load.'));
+        };
+
+        const cleanup = () => {
+          script.removeEventListener('load', onLoad);
+          script.removeEventListener('error', onError);
+        };
+
+        script.addEventListener('load', onLoad);
+        script.addEventListener('error', onError);
+      });
+    },
+    setAuthFailureHandler() {
+      const previousHandler = window.gm_authFailure;
+      window.gm_authFailure = () => {
+        this.mapError = 'Map unavailable — unable to load Google Maps';
+        if (typeof previousHandler === 'function') {
+          previousHandler();
+        }
+      };
+
+      this.restoreAuthFailure = () => {
+        if (typeof previousHandler === 'function') {
+          window.gm_authFailure = previousHandler;
+          return;
+        }
+        delete window.gm_authFailure;
+      };
+    },
+    observeGoogleMapErrors() {
+      if (!this.$refs.mapCanvas || this.mapErrorObserver) {
+        return;
+      }
+
+      this.mapErrorObserver = new MutationObserver(() => {
+        const hasError = this.$refs.mapCanvas.querySelector('.gm-err-container');
+        if (hasError) {
+          this.mapError = 'Map unavailable — unable to load Google Maps';
+        }
+      });
+
+      this.mapErrorObserver.observe(this.$refs.mapCanvas, {
+        childList: true,
+        subtree: true,
+      });
+    },
+    teardownMap() {
+      this.markers.forEach((marker) => marker.setMap(null));
+      this.markers = [];
+      this.map = null;
+
+      if (this.mapErrorObserver) {
+        this.mapErrorObserver.disconnect();
+        this.mapErrorObserver = null;
+      }
+
+      if (typeof this.restoreAuthFailure === 'function') {
+        this.restoreAuthFailure();
+        this.restoreAuthFailure = null;
+      }
     },
   },
 };
@@ -63,112 +192,40 @@ export default {
   min-height: 285px;
   width: 100%;
   border: 1px solid #e5ecf6;
-  background: linear-gradient(180deg, rgba(115, 150, 97, 0.2), rgba(69, 103, 180, 0.1));
+  background: #dde8f6;
 }
 
-.map-card::before {
-  content: '';
+.map-canvas {
+  min-height: 285px;
+  width: 100%;
+  height: 100%;
+}
+
+.map-canvas--hidden {
+  visibility: hidden;
+}
+
+.map-status,
+.map-fallback {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 20% 40%, rgba(34, 197, 94, 0.35), rgba(34, 197, 94, 0) 44%),
-    radial-gradient(circle at 75% 50%, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0) 48%),
-    linear-gradient(90deg, #0f766e 0%, #0f766e 7%, #1f2937 7%, #1f2937 93%, #0f766e 93%, #0f766e 100%);
-  opacity: 0.85;
-}
-
-.map-controls {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 8px;
-  z-index: 2;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
-}
-
-.map-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: #fff;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.map-btn--down {
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.pin {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  z-index: 2;
-  background: #fff;
-  border: 3px solid #fff;
-  box-shadow: 0 12px 18px rgba(0, 0, 0, 0.18);
-}
-
-.pin::after {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.pin--green {
-  color: #22c55e;
-}
-.pin--purple {
-  color: #a855f7;
-}
-.pin--blue {
-  color: #60a5fa;
-}
-
-.map-error-modal {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
-  background: #fff;
-  border-radius: 8px;
-  padding: 0.85rem 1rem;
+  display: grid;
+  place-items: center;
   text-align: center;
-  max-width: 310px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.google-label {
-  font-weight: 800;
-  font-size: 0.95rem;
-  margin-bottom: 0.35rem;
-}
-
-.modal-text {
-  font-size: 0.9rem;
-  color: #1e3247;
-  line-height: 1.25;
-  margin: 0.1rem 0;
-}
-
-.ok-button {
-  margin-top: 0.65rem;
-  background: #fff;
-  border: 1px solid rgba(37, 99, 235, 0.3);
-  color: #1d4ed8;
-  padding: 0.35rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
   font-weight: 700;
-  font-size: 0.85rem;
+  color: #1e3247;
+  padding: 0.5rem;
+}
+
+.map-status {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.map-fallback {
+  background: #dde8f6;
+}
+
+.map-card :deep(.gm-err-container) {
+  display: none !important;
 }
 </style>

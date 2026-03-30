@@ -44,11 +44,9 @@ export default {
   },
   data() {
     return {
-      placeholder: 'e.g., Ang Mo Kio, Bedok',
       query: '',
       selectedArea: null,
       selectedCategory: 'All',
-      popularAreas: ['Ang Mo Kio', 'Bedok', 'Tampines', 'Jurong'],
       notices: [
         { id: 1, title: 'Health Alert: Dengue Cluster', description: 'Please take precautions and clear stagnant water at Blk 102.', date: 'Posted Today', category: 'Alerts' },
         { id: 2, title: 'Upgrading Works', description: 'Lift B scheduled maintenance on 14 Nov, 9 AM to 5 PM.', date: 'Posted Yesterday', category: 'Upgrading' },
