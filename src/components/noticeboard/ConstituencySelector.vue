@@ -37,7 +37,9 @@ export default {
 }
 
 .select-input {
+  display: block;
   width: 100%;
+  box-sizing: border-box;
   height: 54px;
   border-radius: 999px;
   border: 1px solid #a5bed5;
