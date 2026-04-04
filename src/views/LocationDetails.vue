@@ -21,13 +21,11 @@
           <p><strong>About:</strong> {{ location.about || 'No description available' }}</p>
         </div>
 
-        <!-- Map placeholder -->
         <div class="bg-gray-200 h-64 rounded flex items-center justify-center">
           <p class="text-gray-600">Map would go here (lat: {{ location.lat }}, lng: {{ location.lng }})</p>
         </div>
       </div>
 
-      <!-- Crowd Voting -->
       <div class="mt-10 border-t pt-8">
         <h2 class="text-2xl font-semibold mb-4">Current Crowd Level</h2>
 
@@ -77,7 +75,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { doc, getDoc, onSnapshot, updateDoc, increment, getFirestore } from 'firebase/firestore'
-import { app } from '@/firebase'  
+import { app } from '@/firebase'
 
 const db = getFirestore(app)
 const route = useRoute()
@@ -98,7 +96,7 @@ onMounted(async () => {
     return
   }
 
-  const docRef = doc(db, 'facilities', id)  
+  const docRef = doc(db, 'facilities', id)
 
   try {
     const snap = await getDoc(docRef)
@@ -119,7 +117,6 @@ onMounted(async () => {
     loading.value = false
   }
 
-  // Real-time vote updates
   unsubscribe = onSnapshot(docRef, (snap) => {
     if (snap.exists()) {
       const data = snap.data()
@@ -129,8 +126,6 @@ onMounted(async () => {
         veryCrowded: data.veryCrowded || 0
       }
     }
-  }, (err) => {
-    console.error('Snapshot error:', err)
   })
 })
 
@@ -160,7 +155,6 @@ const badgeClass = computed(() => {
 
 async function vote(level) {
   if (hasVoted.value) return
-
   const id = route.params.id
   if (!id) return
 
@@ -171,12 +165,10 @@ async function vote(level) {
     localStorage.setItem(`voted_${id}`, 'true')
     hasVoted.value = true
   } catch (err) {
-    console.error('Vote failed:', err)
     alert('Could not record vote: ' + (err.message || 'Unknown error'))
   }
 }
 </script>
 
 <style>
-
 </style>
