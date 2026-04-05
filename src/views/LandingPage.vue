@@ -3,7 +3,7 @@
     <LandingHeader />
     <NoticeboardBanner />
     <CategoryFilter :selected="selectedCategory" @update:selected="handleCategoryChange" />
-    <RadiusFilter :selected="selectedRadius" @update:selected="handleRadiusChange" />
+    <RadiusFilter :selected="selectedRadius" :wheelchairOnly="store.wheelchairOnly" @update:selected="handleRadiusChange" @update:wheelchairOnly="handleWheelchairToggle" />
     <SearchSection @search="handleSearch" />
     <MapSection />
 
@@ -66,6 +66,9 @@ export default {
       this.selectedRadius = value;
       const km = parseInt(value); // '3km' → 3
       this.store.setRadius(km);
+    },
+    handleWheelchairToggle(value) {
+      this.store.setWheelchairOnly(value);
     },
   },
 };
