@@ -8,10 +8,12 @@
       <div class="location-card__topRow">
         <h3 class="location-card__name">{{ location.name }}</h3>
 
-        <button class="fav-btn" type="button" aria-label="Favourite" @click.stop>
-          <BaseIcon :icon="Heart" :size="18" stroke-width="2" />
+        <button class="fav-btn" type="button" aria-label="Favourite" @click.stop="handleFavourite">
+          <BaseIcon :icon="Heart" :size="18" stroke-width="2" :class="{ 'fav-btn--active': showToast }" />
         </button>
       </div>
+
+      <div v-if="showToast" class="fav-toast">Log in to save favourites</div>
 
       <div class="location-card__category">{{ location.type }}</div>
       <div class="location-card__address">{{ location.address }}</div>
@@ -56,7 +58,13 @@ export default {
     },
   },
   data() {
-    return { Heart };
+    return { Heart, showToast: false };
+  },
+  methods: {
+    handleFavourite() {
+      this.showToast = true;
+      setTimeout(() => { this.showToast = false; }, 2000);
+    },
   },
 };
 </script>
@@ -116,6 +124,21 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.fav-btn--active {
+  color: #ef4444;
+}
+
+.fav-toast {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background: #1e3247;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  display: inline-block;
 }
 
 .location-card__category {
