@@ -7,7 +7,6 @@
     <SearchSection @search="handleSearch" />
     <MapSection />
     <ResultsList :locations="filteredLocations" />
-    <LocationDetails />
   </div>
 </template>
 
@@ -19,7 +18,6 @@ import CategoryFilter from '@/components/landing/CategoryFilter.vue';
 import RadiusFilter from '@/components/landing/RadiusFilter.vue';
 import MapSection from '@/components/landing/MapSection.vue';
 import ResultsList from '@/components/landing/ResultsList.vue';
-import LocationDetails from './LocationDetails.vue';
 
 export default {
   name: 'LandingPage',
@@ -30,8 +28,7 @@ export default {
     CategoryFilter,
     RadiusFilter,
     MapSection,
-    ResultsList,
-    LocationDetails
+    ResultsList
   },
   data() {
     return {
