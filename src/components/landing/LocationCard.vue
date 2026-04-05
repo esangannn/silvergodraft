@@ -1,6 +1,6 @@
 <template>
-  <article class="location-card">
-    <div class="location-card__iconWrap" :style="{ background: location.iconColor }" aria-hidden="true">
+  <article class="location-card" @click="$router.push('/location/' + location.id)">
+    <div class="location-card__iconWrap" :style="{ background: iconColor }" aria-hidden="true">
       <BaseIcon :icon="locationIcon" :size="20" stroke-width="2" />
     </div>
 
@@ -8,20 +8,18 @@
       <div class="location-card__topRow">
         <h3 class="location-card__name">{{ location.name }}</h3>
 
-        <button class="fav-btn" type="button" aria-label="Favourite">
+        <button class="fav-btn" type="button" aria-label="Favourite" @click.stop>
           <BaseIcon :icon="Heart" :size="18" stroke-width="2" />
         </button>
       </div>
 
-      <div class="location-card__category">{{ location.category }}</div>
+      <div class="location-card__category">{{ location.type }}</div>
       <div class="location-card__address">{{ location.address }}</div>
 
       <div class="location-card__tagRow">
-        <span class="distance-tag">{{ location.distance }} away</span>
-        <span class="a11y-pill">{{ location.accessibility }}</span>
+        <span class="distance-tag">{{ formattedDistance }}</span>
+        <span v-if="location.wheelchair" class="a11y-pill">Wheelchair Access</span>
       </div>
-
-      <div class="location-card__rating">Rating: {{ location.rating }}</div>
     </div>
   </article>
 </template>
@@ -29,6 +27,15 @@
 <script>
 import BaseIcon from '@/components/shared/BaseIcon.vue';
 import { Heart, Home, Stethoscope, Users, Activity } from 'lucide-vue-next';
+
+const ICON_MAP = {
+  Clinic:          { icon: Stethoscope, color: '#ff7f50' },
+  Pharmacy:        { icon: Stethoscope, color: '#ff7f50' },
+  Eldercare:       { icon: Stethoscope, color: '#ff7f50' },
+  'Community Club':{ icon: Users,       color: '#64b5f6' },
+  Gym:             { icon: Activity,    color: '#34d399' },
+  Park:            { icon: Activity,    color: '#34d399' },
+};
 
 export default {
   name: 'LocationCard',
@@ -38,18 +45,14 @@ export default {
   },
   computed: {
     locationIcon() {
-      const type = this.location.iconType;
-      switch (type) {
-        case 'stethoscope':
-          return Stethoscope;
-        case 'users':
-          return Users;
-        case 'activity':
-          return Activity;
-        case 'home':
-        default:
-          return Home;
-      }
+      return (ICON_MAP[this.location.type] || { icon: Home }).icon;
+    },
+    iconColor() {
+      return (ICON_MAP[this.location.type] || { color: '#94a3b8' }).color;
+    },
+    formattedDistance() {
+      if (this.location.distance == null) return '';
+      return `${this.location.distance} km away`;
     },
   },
   data() {
@@ -68,6 +71,11 @@ export default {
   border: 1px solid #dce8f0;
   border-radius: 14px;
   padding: 0.9rem 0.95rem;
+  cursor: pointer;
+}
+
+.location-card:hover {
+  border-color: #ff6b36;
 }
 
 .location-card__iconWrap {
@@ -149,12 +157,5 @@ export default {
   border-radius: 999px;
   background: rgba(34, 197, 94, 0.12);
   border: 1px solid rgba(34, 197, 94, 0.18);
-}
-
-.location-card__rating {
-  margin-top: 0.6rem;
-  font-size: 0.78rem;
-  font-weight: 900;
-  color: #6b7280;
 }
 </style>

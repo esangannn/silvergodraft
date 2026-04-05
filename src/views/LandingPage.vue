@@ -2,15 +2,20 @@
   <div class="landing-page">
     <LandingHeader />
     <NoticeboardBanner />
-    <CategoryFilter v-model:selected="selectedCategory" />
-    <RadiusFilter v-model:selected="selectedRadius" />
+    <CategoryFilter :selected="selectedCategory" @update:selected="handleCategoryChange" />
+    <RadiusFilter :selected="selectedRadius" @update:selected="handleRadiusChange" />
     <SearchSection @search="handleSearch" />
     <MapSection />
-    <ResultsList :locations="filteredLocations" />
+
+    <div v-if="store.isLoading" class="status-msg">Searching...</div>
+    <div v-else-if="store.error" class="status-msg status-msg--error">{{ store.error }}</div>
+    <div v-else-if="!store.userLocation" class="status-msg">Enter a postal code to find facilities near you.</div>
+    <ResultsList v-else :locations="store.facilities" />
   </div>
 </template>
 
 <script>
+import { useFacilityStore } from '@/stores/facilityStore';
 import LandingHeader from '@/components/landing/LandingHeader.vue';
 import NoticeboardBanner from '@/components/landing/NoticeboardBanner.vue';
 import SearchSection from '@/components/landing/SearchSection.vue';
@@ -30,138 +35,39 @@ export default {
     MapSection,
     ResultsList
   },
+  setup() {
+    const store = useFacilityStore();
+    return { store };
+  },
   data() {
     return {
       selectedCategory: 'All Places',
       selectedRadius: '3km',
-      locations: [
-        {
-          id: 1,
-          name: 'Ang Mo Kio Polyclinic',
-          group: 'Healthcare',
-          category: 'Polyclinic',
-          address: '21 Ang Mo Kio Central 2, #01-01',
-          distance: '1.2 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.2/5',
-          iconType: 'stethoscope',
-          iconColor: '#ff7f50',
-        },
-        {
-          id: 2,
-          name: 'Tan Tock Seng Hospital',
-          group: 'Healthcare',
-          category: 'Hospital',
-          address: '11 Jalan Tan Tock Seng',
-          distance: '2.5 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.5/5',
-          iconType: 'stethoscope',
-          iconColor: '#ff7f50',
-        },
-        {
-          id: 3,
-          name: 'Bishan Community Club',
-          group: 'Community Centres',
-          category: 'Community Centre',
-          address: '51 Bishan Street 13',
-          distance: '0.8 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.3/5',
-          iconType: 'users',
-          iconColor: '#64b5f6',
-        },
-        {
-          id: 4,
-          name: 'Toa Payoh Active Ageing Centre',
-          group: 'Activities',
-          category: 'Active Ageing Centre',
-          address: 'Block 93 Toa Payoh Lorong 4, #01-324',
-          distance: '1.9 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.1/5',
-          iconType: 'activity',
-          iconColor: '#64b5f6',
-        },
-        {
-          id: 5,
-          name: 'Serangoon Community Centre',
-          group: 'Community Centres',
-          category: 'Community Centre',
-          address: '83 Serangoon North Avenue 1',
-          distance: '2.1 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.0/5',
-          iconType: 'users',
-          iconColor: '#64b5f6',
-        },
-        {
-          id: 6,
-          name: 'Jurong Polyclinic',
-          group: 'Healthcare',
-          category: 'Polyclinic',
-          address: '162 Jurong East Street 12',
-          distance: '3.2 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.2/5',
-          iconType: 'stethoscope',
-          iconColor: '#ff7f50',
-        },
-        {
-          id: 7,
-          name: 'Ang Mo Kio Family Clinic',
-          group: 'Healthcare',
-          category: 'Clinic',
-          address: '117 Ang Mo Kio Avenue 4',
-          distance: '2.7 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.1/5',
-          iconType: 'stethoscope',
-          iconColor: '#ff7f50',
-        },
-        {
-          id: 8,
-          name: 'Woodlands Active Ageing Centre',
-          group: 'Activities',
-          category: 'Active Ageing Centre',
-          address: '20 Woodlands Avenue 4',
-          distance: '4.0 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.3/5',
-          iconType: 'activity',
-          iconColor: '#64b5f6',
-        },
-        {
-          id: 9,
-          name: 'Bedok Community Centre',
-          group: 'Community Centres',
-          category: 'Community Centre',
-          address: '12 Bedok North Street 2',
-          distance: '3.4 km',
-          accessibility: 'Wheelchair Access',
-          rating: '4.4/5',
-          iconType: 'users',
-          iconColor: '#64b5f6',
-        },
-      ],
-      query: ''
     };
   },
   methods: {
     handleSearch(value) {
-      this.query = value;
-    }
+      // Only trigger when exactly 6 digits are entered (valid Singapore postal code)
+      if (/^\d{6}$/.test(value)) {
+        this.store.searchByPostalCode(value);
+      }
+    },
+    handleCategoryChange(value) {
+      this.selectedCategory = value;
+      const categoryMap = {
+        'All Places':        () => this.store.resetToAllPlaces(),
+        'Healthcare':        () => this.store.setCategory('Healthcare'),
+        'Community Centres': () => this.store.setCategory('Community Centre'),
+        'Activities':        () => this.store.setCategory('Activity'),
+      };
+      if (categoryMap[value]) categoryMap[value]();
+    },
+    handleRadiusChange(value) {
+      this.selectedRadius = value;
+      const km = parseInt(value); // '3km' → 3
+      this.store.setRadius(km);
+    },
   },
-  computed: {
-    filteredLocations() {
-      return this.locations.filter(location => {
-        const categoryMatch = this.selectedCategory === 'All Places' || location.group === this.selectedCategory;
-        const queryMatch = this.query ? location.name.toLowerCase().includes(this.query.toLowerCase()) : true;
-        const radiusMatch = true;
-        return categoryMatch && queryMatch && radiusMatch;
-      });
-    }
-  }
 };
 </script>
 
@@ -174,5 +80,17 @@ export default {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+}
+
+.status-msg {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #556b84;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.status-msg--error {
+  color: #dc2626;
 }
 </style>
