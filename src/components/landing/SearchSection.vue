@@ -15,33 +15,78 @@
         class="search-input"
         type="text"
         :value="inputValue"
-        placeholder="Enter Postal Code or Estate"
+        placeholder="Enter Postal Code"
         @input="onInput($event)"
         @keydown.enter="emitSearch"
       />
+      <button
+        class="gps-btn"
+        type="button"
+        aria-label="Use my location"
+        :disabled="locating"
+        @click="handleGPS"
+      >
+        <MapPin :size="18" stroke-width="2" />
+        <span v-if="locating">Locating...</span>
+        <span v-else>Use My Location</span>
+      </button>
     </div>
+
+    <p v-if="gpsError" class="gps-error">{{ gpsError }}</p>
   </section>
 </template>
+
 <script>
-import { Search } from 'lucide-vue-next';
+import { Search, MapPin } from 'lucide-vue-next';
+import { useFacilityStore } from '@/stores/facilityStore';
 
 export default {
   name: 'SearchSection',
+  components: { Search, MapPin },
+  setup() {
+    const store = useFacilityStore();
+    return { store };
+  },
   data() {
-    return { inputValue: '' };
+    return {
+      inputValue: '',
+      locating: false,
+      gpsError: null,
+    };
   },
   methods: {
     onInput(e) {
       this.inputValue = e.target.value;
-      // Keep parent in sync for filtering even without a dedicated Search button.
       this.$emit('search', this.inputValue);
     },
     emitSearch() {
       this.$emit('search', this.inputValue);
     },
+    handleGPS() {
+      if (!navigator.geolocation) {
+        this.gpsError = 'Geolocation is not supported by your browser.';
+        return;
+      }
+      this.locating = true;
+      this.gpsError = null;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          this.locating = false;
+          this.store.setLocationAndSearch({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          });
+        },
+        () => {
+          this.locating = false;
+          this.gpsError = 'Could not get your location. Please enter a postal code instead.';
+        }
+      );
+    },
   },
 };
 </script>
+
 <style scoped>
 .search-section {
   margin: 0.25rem 0 0.95rem;
@@ -66,7 +111,6 @@ export default {
 
 .search-inputRow {
   width: 100%;
-  background: transparent;
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -84,7 +128,7 @@ export default {
 }
 
 .search-input {
-  width: 100%;
+  flex: 1 1 auto;
   border: none;
   outline: none;
   background: transparent;
@@ -96,5 +140,34 @@ export default {
 .search-input::placeholder {
   color: #86a0b5;
   font-weight: 700;
+}
+
+.gps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: none;
+  background: #ff6b36;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.gps-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gps-error {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: #dc2626;
+  font-weight: 700;
+  padding-left: 0.5rem;
 }
 </style>
