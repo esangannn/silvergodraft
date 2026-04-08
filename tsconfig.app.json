@@ -10,7 +10,7 @@
     // Path mapping for cleaner imports.
     "paths": {
       "@/*": ["./src/*"]
-    },
+    }
 
     // Build info is disabled in this JS-only setup.
   }

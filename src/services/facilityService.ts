@@ -17,6 +17,7 @@ export interface Facility {
   phone?: string;
   about?: string;
   distance?: number; // Calculated distance from query center
+  iconColor?: string; // Derived from facility type for map pin colour
 }
 
 export interface SearchFilters {
@@ -31,6 +32,15 @@ const CATEGORY_TYPE_MAP: Record<string, string[]> = {
   'Healthcare':       ['Clinic', 'Pharmacy', 'Eldercare'],
   'Community Centre': ['Community Club'],
   'Activity':         ['Gym', 'Park'],
+};
+
+const CATEGORY_COLOR_MAP: Record<string, string> = {
+  'Clinic':          '#ff7f50',
+  'Pharmacy':        '#ff7f50',
+  'Eldercare':       '#ff7f50',
+  'Community Club':  '#64b5f6',
+  'Gym':             '#81c784',
+  'Park':            '#81c784',
 };
 
 /**
@@ -72,7 +82,8 @@ export async function searchFacilities(filters: SearchFilters): Promise<Facility
         wheelchair: data.wheelchair,
         hours: data.hours,
         phone: data.phone,
-        about: data.about
+        about: data.about,
+        iconColor: CATEGORY_COLOR_MAP[data.type] ?? '#aaaaaa',
       };
 
       // Perform client-side radius filtering if coordinates & radius provided

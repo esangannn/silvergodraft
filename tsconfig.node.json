@@ -17,7 +17,7 @@
     // Include Node.js types and avoid accidentally including other `@types/*` packages.
     "types": ["node"],
 
-    "noEmit": true,
+    "noEmit": true
     // Build info is disabled in this JS-only setup.
   }
 }

@@ -5,7 +5,7 @@
     <CategoryFilter :selected="selectedCategory" @update:selected="handleCategoryChange" />
     <RadiusFilter :selected="selectedRadius" :wheelchairOnly="store.wheelchairOnly" @update:selected="handleRadiusChange" @update:wheelchairOnly="handleWheelchairToggle" />
     <SearchSection @search="handleSearch" />
-    <MapSection />
+    <MapSection :locations="store.facilities" />
 
     <div v-if="store.isLoading" class="status-msg">Searching...</div>
     <div v-else-if="store.error" class="status-msg status-msg--error">{{ store.error }}</div>
