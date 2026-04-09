@@ -1,113 +1,32 @@
 <template>
-  <div class="max-w-3xl mx-auto p-6">
-    <div v-if="loading" class="text-center py-10">
-      <p class="text-lg">Loading facility details...</p>
-    </div>
+  <div class="details-page">
+    <LocationHeader :name="location.name" />
 
-    <div v-else-if="error" class="text-center py-10 text-red-600">
-      <p class="text-xl">{{ error }}</p>
-    </div>
+    <LocationInfoCard :location="location" />
 
-    <div v-else class="space-y-6">
-      <h1 class="text-3xl font-bold">{{ location.name || 'Unnamed Facility' }}</h1>
+    <CrowdInsights
+      :votes="votes"
+      :totalVotes="totalVotes"
+      :pct="pct"
+      :badgeText="badgeText"
+      :badgeClass="badgeClass"
+      :hasVoted="hasVoted"
+      @vote="vote"
+    />
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <p><strong>Address:</strong> {{ location.address || 'N/A' }}</p>
-          <p><strong>Type:</strong> {{ location.type || 'N/A' }}</p>
-          <p><strong>Wheelchair Accessible:</strong> {{ location.wheelchair ? 'Yes' : 'No' }}</p>
-          <p><strong>Hours:</strong> {{ location.hours || 'N/A' }}</p>
-          <p><strong>Phone:</strong> {{ location.phone || 'N/A' }}</p>
-          <p><strong>About:</strong> {{ location.about || 'No description available' }}</p>
-        </div>
-
-        <div class="bg-gray-200 h-64 rounded flex items-center justify-center">
-          <p class="text-gray-600">Map would go here (lat: {{ location.lat }}, lng: {{ location.lng }})</p>
-        </div>
-      </div>
-
-      <div class="mt-10 border-t pt-8">
-        <h2 class="text-2xl font-semibold mb-2">Current Crowd Level</h2>
-        <p class="text-sm text-gray-400 mb-4">Based on votes in the past hour</p>
-
-        <!-- Badge -->
-        <div class="inline-block px-6 py-3 rounded-full text-white font-bold text-lg mb-6" :class="badgeClass">
-          {{ badgeText }}
-        </div>
-
-        <!-- Bar chart -->
-        <div v-if="totalVotes > 0" class="mb-6">
-          <div class="crowd-bar-row">
-            <span class="crowd-bar-label">Not Crowded</span>
-            <div class="crowd-bar-track">
-              <div
-                class="crowd-bar-fill crowd-bar-fill--green"
-                :style="{ width: pct(votes.notCrowded) + '%' }"
-              />
-            </div>
-            <span class="crowd-bar-count">{{ votes.notCrowded }}</span>
-          </div>
-          <div class="crowd-bar-row">
-            <span class="crowd-bar-label">Busy</span>
-            <div class="crowd-bar-track">
-              <div
-                class="crowd-bar-fill crowd-bar-fill--yellow"
-                :style="{ width: pct(votes.busy) + '%' }"
-              />
-            </div>
-            <span class="crowd-bar-count">{{ votes.busy }}</span>
-          </div>
-          <div class="crowd-bar-row">
-            <span class="crowd-bar-label">Very Crowded</span>
-            <div class="crowd-bar-track">
-              <div
-                class="crowd-bar-fill crowd-bar-fill--red"
-                :style="{ width: pct(votes.veryCrowded) + '%' }"
-              />
-            </div>
-            <span class="crowd-bar-count">{{ votes.veryCrowded }}</span>
-          </div>
-          <p class="crowd-total">{{ totalVotes }} vote{{ totalVotes === 1 ? '' : 's' }} in the past hour</p>
-        </div>
-
-        <div v-else class="mb-6 text-gray-500 text-sm">No votes in the past hour. Be the first to report!</div>
-
-        <!-- Vote buttons -->
-        <p class="font-medium mb-4">How crowded is it right now?</p>
-
-        <div class="flex flex-wrap gap-4">
-          <button
-            @click="vote('notCrowded')"
-            :disabled="hasVoted || loading"
-            class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Not Crowded
-          </button>
-          <button
-            @click="vote('busy')"
-            :disabled="hasVoted || loading"
-            class="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Busy
-          </button>
-          <button
-            @click="vote('veryCrowded')"
-            :disabled="hasVoted || loading"
-            class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Very Crowded
-          </button>
-        </div>
-
-        <p v-if="hasVoted" class="mt-4 text-green-600 font-medium">
-          Thank you! Your vote has been recorded.
-        </p>
-      </div>
-    </div>
+    <NavigationGuide />
+    
+    <ShareButton />
   </div>
 </template>
 
 <script setup>
+import LocationHeader from '@/components/locationdetails/LocationHeader.vue'
+import LocationInfoCard from '@/components/locationdetails/LocationInfoCard.vue'
+import CrowdInsights from '@/components/locationdetails/CrowdInsights.vue'
+import NavigationGuide from '@/components/locationdetails/NavigationGuide.vue'
+import ShareButton from '@/components/locationdetails/ShareButton.vue'
+
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { doc, getDoc, onSnapshot, updateDoc, increment, serverTimestamp, getFirestore } from 'firebase/firestore'
@@ -242,52 +161,14 @@ async function vote(level) {
 </script>
 
 <style scoped>
-.crowd-bar-row {
+.details-page {
+  min-height: 100vh;
+  background: #fff8f3;  
+  padding: 0.95rem 1rem 2rem;
+  max-width: 980px;
+  margin: 0 auto;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.6rem;
-}
-
-.crowd-bar-label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #374151;
-  width: 110px;
-  flex-shrink: 0;
-}
-
-.crowd-bar-track {
-  flex: 1;
-  height: 14px;
-  background: #f1f5f9;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.crowd-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
-
-.crowd-bar-fill--green  { background: #22c55e; }
-.crowd-bar-fill--yellow { background: #eab308; }
-.crowd-bar-fill--red    { background: #ef4444; }
-
-.crowd-bar-count {
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: #64748b;
-  width: 24px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.crowd-total {
-  margin-top: 0.4rem;
-  font-size: 0.78rem;
-  color: #94a3b8;
-  font-weight: 700;
+  flex-direction: column;
+  gap: 20px
 }
 </style>
