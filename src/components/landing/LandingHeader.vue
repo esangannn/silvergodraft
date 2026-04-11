@@ -5,7 +5,13 @@
     </button>
 
     <div class="actions">
-      <button class="login-btn" type="button">Log In</button>
+      <button
+        class="login-btn"
+        type="button"
+        @click="$router.push('/auth')"
+      >
+        Log In
+      </button>
       <button class="icon-btn" type="button" aria-label="Language">
         <Globe :size="20" stroke-width="2" />
       </button>
@@ -17,12 +23,12 @@
 </template>
 
 <script>
-import { Home, Globe, Heart } from 'lucide-vue-next';
+import { Home, Globe, Heart } from 'lucide-vue-next'
 
 export default {
   name: 'LandingHeader',
   components: { Home, Globe, Heart },
-};
+}
 </script>
 
 <style scoped>
