@@ -27,7 +27,7 @@ export const RADIUS_OPTIONS = [1, 3, 5, 10] as const;
  * Category values that map directly to the Firestore `type` field.
  * null means "All Places" (no category filter applied).
  */
-export type FacilityCategory = 'Healthcare' | 'Community Centre' | 'Activity' | null;
+export type FacilityCategory = 'Healthcare' | 'Community Centre' | 'Activity';
 
 export const useFacilityStore = defineStore('facility', () => {
   // ─── State ────────────────────────────────────────────────────────────────
@@ -35,8 +35,8 @@ export const useFacilityStore = defineStore('facility', () => {
   /** Currently selected search radius in km. T02-03: initialised to 3. */
   const selectedRadius = ref<number>(DEFAULT_RADIUS_KM);
 
-  /** Currently selected category filter. null = show all categories. */
-  const selectedCategory = ref<FacilityCategory>(null);
+  /** Currently selected category filters. Empty array = show all categories. */
+  const selectedCategory = ref<FacilityCategory[]>([]);
 
   /** Whether to restrict results to wheelchair-accessible venues only. */
   const wheelchairOnly = ref<boolean>(false);
@@ -68,8 +68,7 @@ export const useFacilityStore = defineStore('facility', () => {
 
     try {
       facilities.value = await searchFacilities({
-        // Pass undefined for category when "All Places" is selected (no where clause).
-        category: selectedCategory.value ?? undefined,
+        categories: selectedCategory.value.length > 0 ? selectedCategory.value : undefined,
         wheelchairOnly: wheelchairOnly.value,
         maxRadiusKm: selectedRadius.value,
         userLocation: userLocation.value,
@@ -96,23 +95,23 @@ export const useFacilityStore = defineStore('facility', () => {
   }
 
   /**
-   * Updates the active category filter and re-runs the query.
-   * Pass null to show all categories.
+   * Updates the active category filters and re-runs the query.
+   * Pass an empty array to show all categories.
    *
-   * @param category - Firestore type value, or null for no filter.
+   * @param categories - Array of UI category labels to filter by.
    */
-  async function setCategory(category: FacilityCategory): Promise<void> {
-    selectedCategory.value = category;
+  async function setCategory(categories: FacilityCategory[]): Promise<void> {
+    selectedCategory.value = categories;
     await runSearch();
   }
 
   /**
    * T03-04: "All Places" reset logic.
-   * Clears the category filter AND the wheelchair-only flag, then re-queries
+   * Clears all category filters AND the wheelchair-only flag, then re-queries
    * so the results reflect the full unfiltered set within the current radius.
    */
   async function resetToAllPlaces(): Promise<void> {
-    selectedCategory.value = null;
+    selectedCategory.value = [];
     wheelchairOnly.value = false;
     await runSearch();
   }

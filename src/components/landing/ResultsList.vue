@@ -6,6 +6,7 @@
         v-for="location in locations"
         :key="location.id"
         :location="location"
+        @select="$emit('select', $event)"
       />
     </div>
   </section>
@@ -15,6 +16,7 @@ import LocationCard from './LocationCard.vue';
 export default {
   name: 'ResultsList',
   components: { LocationCard },
+  emits: ['select'],
   props: {
     locations: { type: Array, default: () => [] }
   }

@@ -2,15 +2,21 @@
   <div class="landing-page">
     <LandingHeader />
     <NoticeboardBanner />
-    <CategoryFilter :selected="selectedCategory" @update:selected="handleCategoryChange" />
+    <CategoryFilter :selected="selectedCategories" @update:selected="handleCategoryChange" />
     <RadiusFilter :selected="selectedRadius" :wheelchairOnly="store.wheelchairOnly" @update:selected="handleRadiusChange" @update:wheelchairOnly="handleWheelchairToggle" />
     <SearchSection @search="handleSearch" />
-    <MapSection :locations="store.facilities" />
+    <MapSection :locations="store.facilities" :activeLocationId="activeLocationId" />
 
     <div v-if="store.isLoading" class="status-msg">Searching...</div>
     <div v-else-if="store.error" class="status-msg status-msg--error">{{ store.error }}</div>
     <div v-else-if="!store.userLocation" class="status-msg">Enter a postal code to find facilities near you.</div>
-    <ResultsList v-else :locations="store.facilities" />
+    <div v-else-if="store.facilities.length === 0 && store.wheelchairOnly" class="status-msg">
+      No wheelchair-accessible facilities found nearby — try increasing the search radius.
+    </div>
+    <div v-else-if="store.facilities.length === 0" class="status-msg">
+      No facilities found nearby — try increasing the search radius.
+    </div>
+    <ResultsList v-else :locations="store.facilities" @select="activeLocationId = $event" />
   </div>
 </template>
 
@@ -41,8 +47,9 @@ export default {
   },
   data() {
     return {
-      selectedCategory: 'All Places',
+      selectedCategories: [],
       selectedRadius: '3km',
+      activeLocationId: null,
     };
   },
   methods: {
@@ -52,15 +59,19 @@ export default {
         this.store.searchByPostalCode(value);
       }
     },
-    handleCategoryChange(value) {
-      this.selectedCategory = value;
-      const categoryMap = {
-        'All Places':        () => this.store.resetToAllPlaces(),
-        'Healthcare':        () => this.store.setCategory('Healthcare'),
-        'Community Centres': () => this.store.setCategory('Community Centre'),
-        'Activities':        () => this.store.setCategory('Activity'),
+    handleCategoryChange(values) {
+      this.selectedCategories = values;
+      if (values.length === 0) {
+        this.store.resetToAllPlaces();
+        return;
+      }
+      // Map UI labels to store category names
+      const labelMap = {
+        'Healthcare':        'Healthcare',
+        'Community Centres': 'Community Centre',
+        'Activities':        'Activity',
       };
-      if (categoryMap[value]) categoryMap[value]();
+      this.store.setCategory(values.map(v => labelMap[v]).filter(Boolean));
     },
     handleRadiusChange(value) {
       this.selectedRadius = value;
