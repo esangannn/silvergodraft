@@ -17,28 +17,32 @@
       >
         <component :is="item.icon" :size="22" stroke-width="2" />
       </span>
-      <span class="cat-item__label">{{ item.name }}</span>
+      <span class="cat-item__label">{{ t(item.labelKey) }}</span>
     </button>
   </div>
 </template>
 
 <script>
 import { Home, Stethoscope, Users, Activity } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'CategoryFilter',
   emits: ['update:selected'],
   props: {
-    // Array of active category names (excludes 'All Places'). Empty = all shown.
     selected: { type: Array, default: () => [] },
+  },
+  setup() {
+    const { t } = useI18n();
+    return { t };
   },
   data() {
     return {
       categories: [
-        { name: 'All Places', icon: Home, color: '#0f766e' },
-        { name: 'Healthcare', icon: Stethoscope, color: '#fb923c' },
-        { name: 'Community Centres', icon: Users, color: '#60a5fa' },
-        { name: 'Activities', icon: Activity, color: '#34d399' },
+        { name: 'All Places',        labelKey: 'category.allPlaces',        icon: Home,        color: '#0f766e' },
+        { name: 'Healthcare',        labelKey: 'category.healthcare',        icon: Stethoscope, color: '#fb923c' },
+        { name: 'Community Centres', labelKey: 'category.communityCentres', icon: Users,       color: '#60a5fa' },
+        { name: 'Activities',        labelKey: 'category.activities',        icon: Activity,    color: '#34d399' },
       ],
     };
   },

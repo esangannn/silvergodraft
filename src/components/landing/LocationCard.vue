@@ -18,11 +18,11 @@
 
       <div class="location-card__tagRow">
         <span class="distance-tag">{{ formattedDistance }}</span>
-        <span v-if="location.wheelchair" class="a11y-pill">Wheelchair Access</span>
+        <span v-if="location.wheelchair" class="a11y-pill">{{ $t('card.wheelchairAccess') }}</span>
       </div>
 
       <button class="details-btn" type="button" @click.stop="$router.push('/location/' + location.id)">
-        View Details →
+        {{ $t('card.viewDetails') }}
       </button>
     </div>
   </article>

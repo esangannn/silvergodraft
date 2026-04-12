@@ -1,10 +1,8 @@
 <template>
   <section class="search-section" aria-label="Search">
     <div class="search-text">
-      <h1 class="search-title">Find Healthcare &amp; Activities Near You</h1>
-      <p class="search-subtitle">
-        Discover nearby healthcare facilities, community centres, and senior-friendly activities in your area.
-      </p>
+      <h1 class="search-title">{{ t('search.title') }}</h1>
+      <p class="search-subtitle">{{ t('search.subtitle') }}</p>
     </div>
 
     <div class="search-inputRow">
@@ -15,7 +13,7 @@
         class="search-input"
         type="text"
         :value="inputValue"
-        placeholder="Enter Postal Code"
+        :placeholder="t('search.placeholder')"
         @input="onInput($event)"
         @keydown.enter="emitSearch"
       />
@@ -27,8 +25,8 @@
         @click="handleGPS"
       >
         <MapPin :size="18" stroke-width="2" />
-        <span v-if="locating">Locating...</span>
-        <span v-else>Use My Location</span>
+        <span v-if="locating">{{ t('search.locating') }}</span>
+        <span v-else>{{ t('search.useMyLocation') }}</span>
       </button>
     </div>
 
@@ -37,7 +35,7 @@
     <div v-if="homePostalCode" class="quick-row">
       <button class="home-btn" type="button" @click="searchNearHome">
         <Home :size="15" stroke-width="2.5" />
-        Near My Home
+        {{ t('search.nearMyHome') }}
       </button>
     </div>
   </section>
@@ -45,6 +43,7 @@
 
 <script>
 import { Search, MapPin, Home } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import { useFacilityStore } from '@/stores/facilityStore';
 import { useAuthStore } from '@/stores/authStore';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
@@ -56,9 +55,10 @@ export default {
   name: 'SearchSection',
   components: { Search, MapPin, Home },
   setup() {
+    const { t } = useI18n();
     const store = useFacilityStore();
     const authStore = useAuthStore();
-    return { store, authStore };
+    return { t, store, authStore };
   },
   data() {
     return {
@@ -95,7 +95,7 @@ export default {
     },
     handleGPS() {
       if (!navigator.geolocation) {
-        this.gpsError = 'Geolocation is not supported by your browser.';
+        this.gpsError = this.t('search.gpsUnsupported');
         return;
       }
       this.locating = true;
@@ -110,7 +110,7 @@ export default {
         },
         () => {
           this.locating = false;
-          this.gpsError = 'Could not get your location. Please enter a postal code instead.';
+          this.gpsError = this.t('search.gpsError');
         }
       );
     },

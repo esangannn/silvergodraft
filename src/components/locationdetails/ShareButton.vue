@@ -1,13 +1,16 @@
 <template>
   <button class="share-btn" @click="share">
     <ShareIcon class="icon" />
-    {{ copied ? 'Link Copied!' : 'Share' }}
+    {{ copied ? $t('share.copied') : $t('share.share') }}
   </button>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ShareIcon } from '@heroicons/vue/24/outline'
+
+const { t } = useI18n()
 
 const props = defineProps({
   name: { type: String, default: 'this facility' }

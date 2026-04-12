@@ -1,6 +1,6 @@
 <template>
   <section class="results" aria-label="Results">
-    <h2 class="results__title">{{ locations.length }} Places Found</h2>
+    <h2 class="results__title">{{ $t('results.placesFound', { n: locations.length }) }}</h2>
     <div class="results-list">
       <LocationCard
         v-for="location in locations"

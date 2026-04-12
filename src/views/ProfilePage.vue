@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <button class="back-btn" type="button" @click="$router.push('/')">
-      <ArrowLeftIcon class="back-icon" /> Back
+      <ArrowLeftIcon class="back-icon" /> {{ t('profile.back') }}
     </button>
 
     <div class="profile-card">
@@ -10,7 +10,7 @@
     </div>
 
     <button class="logout-btn" type="button" @click="handleLogout">
-      Log Out
+      {{ t('profile.logout') }}
     </button>
   </div>
 </template>
@@ -18,7 +18,10 @@
 <script setup>
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ArrowLeftIcon, UserCircleIcon } from '@heroicons/vue/24/outline'
+
+const { t } = useI18n()
 
 const authStore = useAuthStore()
 const router = useRouter()

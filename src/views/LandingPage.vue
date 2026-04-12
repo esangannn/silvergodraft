@@ -7,14 +7,14 @@
     <SearchSection @search="handleSearch" />
     <MapSection :locations="store.facilities" :activeLocationId="activeLocationId" />
 
-    <div v-if="store.isLoading" class="status-msg">Searching...</div>
+    <div v-if="store.isLoading" class="status-msg">{{ $t('status.searching') }}</div>
     <div v-else-if="store.error" class="status-msg status-msg--error">{{ store.error }}</div>
-    <div v-else-if="!store.userLocation" class="status-msg">Enter a postal code to find facilities near you.</div>
+    <div v-else-if="!store.userLocation" class="status-msg">{{ $t('status.enterPostalCode') }}</div>
     <div v-else-if="store.facilities.length === 0 && store.wheelchairOnly" class="status-msg">
-      No wheelchair-accessible facilities found nearby — try increasing the search radius.
+      {{ $t('status.noWheelchair') }}
     </div>
     <div v-else-if="store.facilities.length === 0" class="status-msg">
-      No facilities found nearby — try increasing the search radius.
+      {{ $t('status.noResults') }}
     </div>
     <ResultsList v-else :locations="store.facilities" @select="activeLocationId = $event" />
   </div>

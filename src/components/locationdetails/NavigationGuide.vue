@@ -2,7 +2,7 @@
   <div class="navigation-card">
     <a class="directions-btn" :href="mapsUrl" target="_blank" rel="noopener noreferrer">
       <PaperAirplaneIcon class="btn-icon" />
-      Get Directions
+      {{ t('navigation.getDirections') }}
     </a>
 
   </div>
@@ -10,7 +10,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { PaperAirplaneIcon } from '@heroicons/vue/24/outline'
+
+const { t } = useI18n()
 
 const props = defineProps({
   address: { type: String, default: '' }

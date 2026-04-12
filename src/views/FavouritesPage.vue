@@ -4,16 +4,16 @@
       <button class="back-btn" type="button" @click="$router.push('/')">
         <ArrowLeftIcon class="back-icon" />
       </button>
-      <h1 class="title">Saved Places</h1>
+      <h1 class="title">{{ $t('favourites.title') }}</h1>
     </header>
 
-    <div v-if="isLoading" class="status-msg">Loading...</div>
+    <div v-if="isLoading" class="status-msg">{{ $t('favourites.loading') }}</div>
 
     <div v-else-if="favourites.length === 0" class="empty-state">
       <HeartIcon class="empty-icon" />
-      <p class="empty-title">No saved places yet</p>
-      <p class="empty-sub">Tap the heart on any facility to save it here.</p>
-      <button class="explore-btn" @click="$router.push('/')">Explore Facilities</button>
+      <p class="empty-title">{{ $t('favourites.empty') }}</p>
+      <p class="empty-sub">{{ $t('favourites.emptySub') }}</p>
+      <button class="explore-btn" @click="$router.push('/')">{{ $t('favourites.explore') }}</button>
     </div>
 
     <div v-else class="results-list">

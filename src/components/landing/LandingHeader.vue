@@ -11,7 +11,7 @@
         type="button"
         @click="$router.push('/auth')"
       >
-        Log In
+        {{ t('header.login') }}
       </button>
 
       <button
@@ -24,9 +24,26 @@
         {{ displayName }}
       </button>
 
-      <button class="icon-btn" type="button" aria-label="Language">
-        <Globe :size="20" stroke-width="2" />
-      </button>
+      <!-- Language dropdown -->
+      <div class="lang-wrap" ref="langWrap">
+        <button class="lang-trigger" type="button" @click="langOpen = !langOpen">
+          {{ LOCALE_LABELS[locale] }}
+          <ChevronDown :size="12" stroke-width="3" :class="{ 'chevron--open': langOpen }" />
+        </button>
+        <div v-if="langOpen" class="lang-dropdown">
+          <button
+            v-for="l in LOCALES"
+            :key="l"
+            class="lang-option"
+            :class="{ 'lang-option--active': locale === l }"
+            type="button"
+            @click="selectLocale(l)"
+          >
+            {{ LOCALE_LABELS[l] }}
+          </button>
+        </div>
+      </div>
+
       <button
         class="icon-btn icon-btn--filled"
         type="button"
@@ -40,26 +57,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { Home, Globe, Heart, User } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Home, Heart, User, ChevronDown } from 'lucide-vue-next'
 import { auth } from '../../firebase.js'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { onAuthStateChanged } from 'firebase/auth'
 
+const { t, locale } = useI18n()
 const user = ref(null)
-const router = useRouter()
+const langOpen = ref(false)
+const langWrap = ref(null)
+
+const LOCALES = ['en', 'zh', 'ms', 'ta']
+const LOCALE_LABELS = { en: 'EN', zh: '中文', ms: 'BM', ta: 'தமிழ்' }
 
 onMounted(() => {
   onAuthStateChanged(auth, (currentUser) => {
     user.value = currentUser
   })
+  document.addEventListener('click', onClickOutside)
 })
+
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutside)
+})
+
+function onClickOutside(e) {
+  if (langWrap.value && !langWrap.value.contains(e.target)) {
+    langOpen.value = false
+  }
+}
 
 const displayName = computed(() => {
   if (!user.value) return ''
-  // Returns firstName if displayName is available, else 'User'
   return user.value.displayName ? user.value.displayName.split(' ')[0] : 'User'
 })
+
+function selectLocale(l) {
+  locale.value = l
+  localStorage.setItem('locale', l)
+  langOpen.value = false
+}
 </script>
 
 <style scoped>
@@ -117,6 +155,70 @@ const displayName = computed(() => {
 
 .user-profile-btn:hover {
   background: #dbeafe;
+}
+
+/* Language dropdown */
+.lang-wrap {
+  position: relative;
+}
+
+.lang-trigger {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid #d5dce8;
+  background: #fff;
+  color: #2e3b56;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s;
+}
+
+.lang-trigger:hover {
+  background: #f8fafc;
+}
+
+.chevron--open {
+  transform: rotate(180deg);
+}
+
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #dce8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 100px;
+}
+
+.lang-option {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2e3b56;
+  cursor: pointer;
+}
+
+.lang-option:hover {
+  background: #f0f7ff;
+}
+
+.lang-option--active {
+  color: #2563eb;
+  background: #eff6ff;
 }
 
 .icon-btn {
