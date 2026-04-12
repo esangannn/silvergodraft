@@ -14,7 +14,7 @@
       @vote="vote"
     />
 
-    <NavigationGuide />
+    <NavigationGuide :address="location.address" />
     
     <ShareButton :name="location.name" />
   </div>
