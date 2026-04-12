@@ -21,17 +21,65 @@
       v-model="confirm"
     />
 
-    <button class="primary-btn">Create Account</button>
+    <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
+
+    <button class="primary-btn" @click="handleSignup" :disabled="isLoading">
+      {{ isLoading ? 'Creating...' : 'Create Account' }}
+    </button>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import AuthInput from './AuthInput.vue'
+import { auth } from '../../firebase.js'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+
+const emit = defineEmits(['switchToLogin'])
 
 const email = ref('')
 const password = ref('')
 const confirm = ref('')
+const errorMessage = ref('')
+const isLoading = ref(false)
+
+const handleSignup = async () => {
+  errorMessage.value = ''
+  
+  if (password.value !== confirm.value) {
+    errorMessage.value = 'Passwords do not match.'
+    return
+  }
+
+  if (!email.value || !password.value) {
+    errorMessage.value = 'Please fill in all fields.'
+    return
+  }
+
+  try {
+    isLoading.value = true
+    await createUserWithEmailAndPassword(auth, email.value, password.value)
+    // Switch back to the login tab on successful registration
+    emit('switchToLogin')
+  } catch (error) {
+    console.error("Signup error:", error)
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        errorMessage.value = 'This email is already in use.'
+        break
+      case 'auth/invalid-email':
+        errorMessage.value = 'Invalid email address.'
+        break
+      case 'auth/weak-password':
+        errorMessage.value = 'Password should be at least 6 characters.'
+        break
+      default:
+        errorMessage.value = error.message || 'Failed to create account.'
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -54,5 +102,19 @@ const confirm = ref('')
   color: #1f2937;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primary-btn:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.error-msg {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0;
+  text-align: center;
 }
 </style>

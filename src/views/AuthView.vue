@@ -5,7 +5,7 @@
     <AuthTabs v-model="activeTab" />
 
     <LoginForm v-if="activeTab === 'login'" />
-    <SignupForm v-else />
+    <SignupForm v-else @switch-to-login="activeTab = 'login'" />
 
     <button class="guest-btn">Continue as Guest (No account needed)</button>
 
