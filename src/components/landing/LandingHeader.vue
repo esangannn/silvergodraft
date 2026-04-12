@@ -27,7 +27,12 @@
       <button class="icon-btn" type="button" aria-label="Language">
         <Globe :size="20" stroke-width="2" />
       </button>
-      <button class="icon-btn icon-btn--filled" type="button" aria-label="Favourites">
+      <button
+        class="icon-btn icon-btn--filled"
+        type="button"
+        aria-label="Favourites"
+        @click="$router.push('/favourites')"
+      >
         <Heart :size="20" stroke-width="2" />
       </button>
     </div>
