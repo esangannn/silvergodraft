@@ -4,8 +4,10 @@
     <input
       :type="type"
       :placeholder="placeholder"
+      :disabled="disabled"
       v-model="model"
       class="input"
+      :class="{ 'disabled-input': disabled }"
     />
   </div>
 </template>
@@ -17,7 +19,8 @@ const props = defineProps({
   label: String,
   placeholder: String,
   type: { type: String, default: 'text' },
-  modelValue: String
+  modelValue: String,
+  disabled: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -53,5 +56,11 @@ const model = computed({
 
 .input:focus {
   border-color: #1f2937;
+}
+
+.disabled-input {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 </style>

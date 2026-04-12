@@ -2,36 +2,43 @@
   <div class="auth-page">
     <AuthHeader />
 
-    <AuthTabs v-model="activeTab" />
+    <template v-if="user">
+      <UserProfile :user="user" />
+    </template>
+    
+    <template v-else>
+      <AuthTabs v-model="activeTab" />
 
-    <LoginForm v-if="activeTab === 'login'" />
-    <SignupForm v-else @switch-to-login="activeTab = 'login'" />
+      <LoginForm v-if="activeTab === 'login'" />
+      <SignupForm v-else @switch-to-login="activeTab = 'login'" />
 
-    <button class="guest-btn">Continue as Guest (No account needed)</button>
+      <button class="guest-btn" @click="$router.push('/')">Continue as Guest (No account needed)</button>
 
-    <WhyCreateAccount />
+      <WhyCreateAccount />
+    </template>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { auth } from '../firebase.js'
+import { onAuthStateChanged } from 'firebase/auth'
+
 import AuthHeader from '@/components/auth/AuthHeader.vue'
 import AuthTabs from '@/components/auth/AuthTabs.vue'
 import LoginForm from '@/components/auth/LoginForm.vue'
 import SignupForm from '@/components/auth/SignupForm.vue'
 import WhyCreateAccount from '@/components/auth/WhyCreateAccount.vue'
+import UserProfile from '@/components/auth/UserProfile.vue'
 
-export default {
-  components: {
-    AuthHeader,
-    AuthTabs,
-    LoginForm,
-    SignupForm,
-    WhyCreateAccount,
-  },
-  data() {
-    return { activeTab: 'login' }
-  },
-}
+const activeTab = ref('login')
+const user = ref(null)
+
+onMounted(() => {
+  onAuthStateChanged(auth, (currentUser) => {
+    user.value = currentUser
+  })
+})
 </script>
 
 <style scoped>

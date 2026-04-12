@@ -40,12 +40,15 @@ const handleLogin = async () => {
 
   if (!email.value || !password.value) {
     errorMessage.value = 'Please fill in both email and password.'
+    alert(errorMessage.value)
     return
   }
 
   try {
     isLoading.value = true
-    await signInWithEmailAndPassword(auth, email.value, password.value)
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
+    const displayName = userCredential.user.displayName || 'User'
+    alert(`Logged in successfully! Welcome back, ${displayName}.`)
     // Redirect to home/landing page after successful login
     router.push('/')
   } catch (error) {
@@ -66,6 +69,7 @@ const handleLogin = async () => {
       default:
         errorMessage.value = error.message || 'Failed to log in.'
     }
+    alert(errorMessage.value)
   } finally {
     isLoading.value = false
   }

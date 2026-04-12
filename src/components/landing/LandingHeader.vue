@@ -6,12 +6,24 @@
 
     <div class="actions">
       <button
+        v-if="!user"
         class="login-btn"
         type="button"
         @click="$router.push('/auth')"
       >
         Log In
       </button>
+
+      <button
+        v-else
+        class="login-btn user-profile-btn"
+        type="button"
+        @click="$router.push('/auth')"
+      >
+        <User :size="16" stroke-width="2" />
+        {{ displayName }}
+      </button>
+
       <button class="icon-btn" type="button" aria-label="Language">
         <Globe :size="20" stroke-width="2" />
       </button>
@@ -22,13 +34,27 @@
   </header>
 </template>
 
-<script>
-import { Home, Globe, Heart } from 'lucide-vue-next'
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { Home, Globe, Heart, User } from 'lucide-vue-next'
+import { auth } from '../../firebase.js'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
 
-export default {
-  name: 'LandingHeader',
-  components: { Home, Globe, Heart },
-}
+const user = ref(null)
+const router = useRouter()
+
+onMounted(() => {
+  onAuthStateChanged(auth, (currentUser) => {
+    user.value = currentUser
+  })
+})
+
+const displayName = computed(() => {
+  if (!user.value) return ''
+  // Returns firstName if displayName is available, else 'User'
+  return user.value.displayName ? user.value.displayName.split(' ')[0] : 'User'
+})
 </script>
 
 <style scoped>
@@ -68,6 +94,24 @@ export default {
   color: #2e3b56;
   font-weight: 700;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.login-btn:hover {
+  background: #f8fafc;
+}
+
+.user-profile-btn {
+  color: #173b65;
+  border-color: #bbdefb;
+  background: #eaf4ff;
+}
+
+.user-profile-btn:hover {
+  background: #dbeafe;
 }
 
 .icon-btn {

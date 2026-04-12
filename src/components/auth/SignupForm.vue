@@ -1,6 +1,20 @@
 <template>
   <div class="form-card">
     <AuthInput
+      label="First Name"
+      placeholder="e.g. John"
+      type="text"
+      v-model="firstName"
+    />
+
+    <AuthInput
+      label="Last Name"
+      placeholder="e.g. Tan"
+      type="text"
+      v-model="lastName"
+    />
+
+    <AuthInput
       label="Email Address"
       placeholder="e.g. uncle.tan@gmail.com"
       type="email"
@@ -33,10 +47,14 @@
 import { ref } from 'vue'
 import AuthInput from './AuthInput.vue'
 import { auth } from '../../firebase.js'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['switchToLogin'])
+const router = useRouter()
 
+const firstName = ref('')
+const lastName = ref('')
 const email = ref('')
 const password = ref('')
 const confirm = ref('')
@@ -48,19 +66,28 @@ const handleSignup = async () => {
   
   if (password.value !== confirm.value) {
     errorMessage.value = 'Passwords do not match.'
+    alert(errorMessage.value)
     return
   }
 
-  if (!email.value || !password.value) {
+  if (!firstName.value || !lastName.value || !email.value || !password.value) {
     errorMessage.value = 'Please fill in all fields.'
+    alert(errorMessage.value)
     return
   }
 
   try {
     isLoading.value = true
-    await createUserWithEmailAndPassword(auth, email.value, password.value)
-    // Switch back to the login tab on successful registration
-    emit('switchToLogin')
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value)
+    
+    // Update the user's profile with their first and last name
+    await updateProfile(userCredential.user, {
+      displayName: `${firstName.value} ${lastName.value}`
+    })
+
+    alert(`Account created successfully for ${firstName.value} ${lastName.value}!`)
+    router.push('/')
+    
   } catch (error) {
     console.error("Signup error:", error)
     switch (error.code) {
@@ -76,6 +103,7 @@ const handleSignup = async () => {
       default:
         errorMessage.value = error.message || 'Failed to create account.'
     }
+    alert(errorMessage.value)
   } finally {
     isLoading.value = false
   }
