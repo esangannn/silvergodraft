@@ -9,11 +9,9 @@
         <h3 class="location-card__name">{{ location.name }}</h3>
 
         <button class="fav-btn" type="button" aria-label="Favourite" @click.stop="handleFavourite">
-          <BaseIcon :icon="Heart" :size="18" stroke-width="2" :class="{ 'fav-btn--active': showToast }" />
+          <BaseIcon :icon="Heart" :size="18" stroke-width="2" :class="{ 'fav-btn--active': isFaved }" />
         </button>
       </div>
-
-      <div v-if="showToast" class="fav-toast">Log in to save favourites</div>
 
       <div class="location-card__category">{{ location.type }}</div>
       <div class="location-card__address">{{ location.address }}</div>
@@ -33,6 +31,9 @@
 <script>
 import BaseIcon from '@/components/shared/BaseIcon.vue';
 import { Heart, Home, Stethoscope, Users, Activity } from 'lucide-vue-next';
+import { useAuthStore } from '@/stores/authStore';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { app } from '@/firebase';
 
 const ICON_MAP = {
   Clinic:          { icon: Stethoscope, color: '#ff7f50' },
@@ -43,12 +44,27 @@ const ICON_MAP = {
   Park:            { icon: Activity,    color: '#34d399' },
 };
 
+const db = getFirestore(app);
+
 export default {
   name: 'LocationCard',
   components: { BaseIcon },
   emits: ['select'],
   props: {
     location: { type: Object, required: true },
+  },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
+  data() {
+    return { Heart, isFaved: false };
+  },
+  async mounted() {
+    if (!this.authStore.user) return;
+    const ref = doc(db, 'users', this.authStore.user.uid, 'favourites', this.location.id);
+    const snap = await getDoc(ref);
+    this.isFaved = snap.exists();
   },
   computed: {
     locationIcon() {
@@ -62,13 +78,32 @@ export default {
       return `${this.location.distance} km away`;
     },
   },
-  data() {
-    return { Heart, showToast: false };
-  },
   methods: {
-    handleFavourite() {
-      this.showToast = true;
-      setTimeout(() => { this.showToast = false; }, 2000);
+    async handleFavourite() {
+      if (!this.authStore.user) {
+        this.$router.push('/auth');
+        return;
+      }
+      const ref = doc(db, 'users', this.authStore.user.uid, 'favourites', this.location.id);
+      if (this.isFaved) {
+        await deleteDoc(ref);
+        this.isFaved = false;
+      } else {
+        await setDoc(ref, {
+          id: this.location.id,
+          name: this.location.name,
+          address: this.location.address,
+          type: this.location.type,
+          lat: this.location.lat,
+          lng: this.location.lng,
+          wheelchair: this.location.wheelchair ?? false,
+          hours: this.location.hours ?? '',
+          phone: this.location.phone ?? '',
+          about: this.location.about ?? '',
+          iconColor: this.location.iconColor ?? '',
+        });
+        this.isFaved = true;
+      }
     },
   },
 };
@@ -133,18 +168,13 @@ export default {
 
 .fav-btn--active {
   color: #ef4444;
+  fill: #ef4444;
 }
 
-.fav-toast {
-  margin-top: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #fff;
-  background: #1e3247;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  display: inline-block;
+.fav-btn--active :deep(svg) {
+  fill: #ef4444;
 }
+
 
 .location-card__category {
   margin-top: 0.25rem;
