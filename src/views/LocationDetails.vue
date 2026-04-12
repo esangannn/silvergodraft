@@ -16,7 +16,7 @@
 
     <NavigationGuide />
     
-    <ShareButton />
+    <ShareButton :name="location.name" />
   </div>
 </template>
 

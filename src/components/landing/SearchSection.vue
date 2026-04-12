@@ -33,26 +33,51 @@
     </div>
 
     <p v-if="gpsError" class="gps-error">{{ gpsError }}</p>
+
+    <div v-if="homePostalCode" class="quick-row">
+      <button class="home-btn" type="button" @click="searchNearHome">
+        <Home :size="15" stroke-width="2.5" />
+        Near My Home
+      </button>
+    </div>
   </section>
 </template>
 
 <script>
-import { Search, MapPin } from 'lucide-vue-next';
+import { Search, MapPin, Home } from 'lucide-vue-next';
 import { useFacilityStore } from '@/stores/facilityStore';
+import { useAuthStore } from '@/stores/authStore';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { app } from '@/firebase';
+
+const db = getFirestore(app);
 
 export default {
   name: 'SearchSection',
-  components: { Search, MapPin },
+  components: { Search, MapPin, Home },
   setup() {
     const store = useFacilityStore();
-    return { store };
+    const authStore = useAuthStore();
+    return { store, authStore };
   },
   data() {
     return {
       inputValue: '',
       locating: false,
       gpsError: null,
+      homePostalCode: null,
     };
+  },
+  async mounted() {
+    if (!this.authStore.user) return;
+    try {
+      const snap = await getDoc(doc(db, 'users', this.authStore.user.uid));
+      if (snap.exists() && snap.data().postalCode) {
+        this.homePostalCode = snap.data().postalCode;
+      }
+    } catch {
+      // silently ignore — button just won't show
+    }
   },
   methods: {
     onInput(e) {
@@ -61,6 +86,12 @@ export default {
     },
     emitSearch() {
       this.$emit('search', this.inputValue);
+    },
+    searchNearHome() {
+      if (this.homePostalCode) {
+        this.inputValue = this.homePostalCode;
+        this.store.searchByPostalCode(this.homePostalCode);
+      }
     },
     handleGPS() {
       if (!navigator.geolocation) {
@@ -169,5 +200,30 @@ export default {
   color: #dc2626;
   font-weight: 700;
   padding-left: 0.5rem;
+}
+
+.quick-row {
+  margin-top: 0.6rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1.5px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.home-btn:hover {
+  background: #dbeafe;
 }
 </style>
