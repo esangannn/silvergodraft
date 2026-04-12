@@ -7,11 +7,14 @@ const props = defineProps({
   locations: {
     type: Array,
     default: () => []
+  },
+  activeLocationId: {
+    type: String,
+    default: null
   }
 })
 
 const center = { lat: 1.3651, lng: 103.8198 }
-// Keep track of which marker's InfoWindow is currently open
 const activeMarkerId = ref(null)
 const mapRef = ref(null)
 
@@ -21,6 +24,16 @@ watch(() => props.locations, (locations) => {
   locations.forEach(loc => bounds.extend({ lat: loc.lat, lng: loc.lng }))
   mapRef.value.map.fitBounds(bounds)
 }, { deep: true })
+
+// When a card in the results list is clicked, pan to it and open its InfoWindow
+watch(() => props.activeLocationId, (id) => {
+  if (!id || !mapRef.value?.map) return
+  const loc = props.locations.find(l => l.id === id)
+  if (!loc) return
+  mapRef.value.map.panTo({ lat: loc.lat, lng: loc.lng })
+  mapRef.value.map.setZoom(16)
+  activeMarkerId.value = id
+})
 
 const openInfoWindow = (id) => {
   activeMarkerId.value = id

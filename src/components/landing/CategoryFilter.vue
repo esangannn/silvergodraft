@@ -5,10 +5,16 @@
       :key="item.name"
       type="button"
       class="cat-item"
-      :class="{ 'cat-item--active': selected === item.name }"
-      @click="$emit('update:selected', item.name)"
+      :class="{ 'cat-item--active': isActive(item.name) }"
+      @click="toggle(item.name)"
     >
-      <span class="cat-item__icon" :style="{ background: item.color }" aria-hidden="true">
+      <span
+        class="cat-item__icon"
+        :style="isActive(item.name)
+          ? { background: item.color, boxShadow: `0 0 0 3px white, 0 0 0 5px ${item.color}` }
+          : { background: item.color }"
+        aria-hidden="true"
+      >
         <component :is="item.icon" :size="22" stroke-width="2" />
       </span>
       <span class="cat-item__label">{{ item.name }}</span>
@@ -21,8 +27,10 @@ import { Home, Stethoscope, Users, Activity } from 'lucide-vue-next';
 
 export default {
   name: 'CategoryFilter',
+  emits: ['update:selected'],
   props: {
-    selected: { type: String, default: 'All Places' },
+    // Array of active category names (excludes 'All Places'). Empty = all shown.
+    selected: { type: Array, default: () => [] },
   },
   data() {
     return {
@@ -33,6 +41,26 @@ export default {
         { name: 'Activities', icon: Activity, color: '#34d399' },
       ],
     };
+  },
+  methods: {
+    isActive(name) {
+      if (name === 'All Places') return this.selected.length === 0;
+      return this.selected.includes(name);
+    },
+    toggle(name) {
+      if (name === 'All Places') {
+        this.$emit('update:selected', []);
+        return;
+      }
+      const current = [...this.selected];
+      const idx = current.indexOf(name);
+      if (idx === -1) {
+        current.push(name);
+      } else {
+        current.splice(idx, 1);
+      }
+      this.$emit('update:selected', current);
+    },
   },
 };
 </script>
@@ -66,6 +94,7 @@ export default {
   align-items: center;
   justify-content: center;
   color: #fff;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .cat-item__label {
@@ -76,7 +105,11 @@ export default {
 }
 
 .cat-item--active .cat-item__icon {
-  filter: brightness(0.98);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  transform: scale(1.08);
+}
+
+.cat-item--active .cat-item__label {
+  color: #0f172a;
+  font-weight: 900;
 }
 </style>

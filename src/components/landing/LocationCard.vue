@@ -1,5 +1,5 @@
 <template>
-  <article class="location-card" @click="$router.push('/location/' + location.id)">
+  <article class="location-card" @click="$emit('select', location.id)">
     <div class="location-card__iconWrap" :style="{ background: iconColor }" aria-hidden="true">
       <BaseIcon :icon="locationIcon" :size="20" stroke-width="2" />
     </div>
@@ -22,6 +22,10 @@
         <span class="distance-tag">{{ formattedDistance }}</span>
         <span v-if="location.wheelchair" class="a11y-pill">Wheelchair Access</span>
       </div>
+
+      <button class="details-btn" type="button" @click.stop="$router.push('/location/' + location.id)">
+        View Details →
+      </button>
     </div>
   </article>
 </template>
@@ -42,6 +46,7 @@ const ICON_MAP = {
 export default {
   name: 'LocationCard',
   components: { BaseIcon },
+  emits: ['select'],
   props: {
     location: { type: Object, required: true },
   },
@@ -180,5 +185,17 @@ export default {
   border-radius: 999px;
   background: rgba(34, 197, 94, 0.12);
   border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.details-btn {
+  margin-top: 0.6rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
 }
 </style>

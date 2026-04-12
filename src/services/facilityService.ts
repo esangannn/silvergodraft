@@ -21,7 +21,7 @@ export interface Facility {
 }
 
 export interface SearchFilters {
-  category?: string;       // Facility type (e.g., 'clinic', 'gym')
+  categories?: string[];    // One or more UI category labels (e.g. ['Healthcare', 'Activity'])
   wheelchairOnly?: boolean; // Filter by wheelchair accessible
   maxRadiusKm?: number;    // Search radius in km
   userLocation?: Coordinates; // Center point of the search
@@ -53,9 +53,12 @@ export async function searchFacilities(filters: SearchFilters): Promise<Facility
   const facilitiesRef = collection(db, 'facilities');
   const queryConstraints = [];
 
-  // Filter by category using the type map (supports multiple subtypes per group)
-  if (filters.category && CATEGORY_TYPE_MAP[filters.category]) {
-    queryConstraints.push(where('type', 'in', CATEGORY_TYPE_MAP[filters.category]));
+  // Filter by categories — flatten all selected UI groups into one combined Firestore type list
+  if (filters.categories && filters.categories.length > 0) {
+    const types = filters.categories.flatMap(cat => CATEGORY_TYPE_MAP[cat] ?? [])
+    if (types.length > 0) {
+      queryConstraints.push(where('type', 'in', types))
+    }
   }
 
   // Filter by wheelchair accessibility if strictly true
