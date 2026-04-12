@@ -7,7 +7,7 @@
     <LoginForm v-if="activeTab === 'login'" />
     <SignupForm v-else @switch-to-login="activeTab = 'login'" />
 
-    <button class="guest-btn">Continue as Guest (No account needed)</button>
+    <button class="guest-btn" @click="$router.push('/')">Continue as Guest (No account needed)</button>
 
     <WhyCreateAccount />
   </div>

@@ -6,16 +6,31 @@
 
     <div class="actions">
       <button
+        v-if="!authStore.user"
         class="login-btn"
         type="button"
         @click="$router.push('/auth')"
       >
         Log In
       </button>
+      <button
+        v-else
+        class="icon-btn"
+        type="button"
+        aria-label="Profile"
+        @click="$router.push('/profile')"
+      >
+        <UserCircle :size="20" stroke-width="2" />
+      </button>
       <button class="icon-btn" type="button" aria-label="Language">
         <Globe :size="20" stroke-width="2" />
       </button>
-      <button class="icon-btn icon-btn--filled" type="button" aria-label="Favourites">
+      <button
+        class="icon-btn icon-btn--filled"
+        type="button"
+        aria-label="Favourites"
+        @click="$router.push('/favourites')"
+      >
         <Heart :size="20" stroke-width="2" />
       </button>
     </div>
@@ -23,11 +38,16 @@
 </template>
 
 <script>
-import { Home, Globe, Heart } from 'lucide-vue-next'
+import { Home, Globe, Heart, UserCircle } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/authStore'
 
 export default {
   name: 'LandingHeader',
-  components: { Home, Globe, Heart },
+  components: { Home, Globe, Heart, UserCircle },
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
+  },
 }
 </script>
 
