@@ -68,18 +68,34 @@ export default {
       homePostalCode: null,
     };
   },
-  async mounted() {
-    if (!this.authStore.user) return;
-    try {
-      const snap = await getDoc(doc(db, 'users', this.authStore.user.uid));
-      if (snap.exists() && snap.data().postalCode) {
-        this.homePostalCode = snap.data().postalCode;
-      }
-    } catch {
-      // silently ignore — button just won't show
-    }
+  mounted() {
+    this.loadHomePostalCode();
+  },
+  watch: {
+    'authStore.ready'() {
+      this.loadHomePostalCode();
+    },
+    'authStore.user'() {
+      this.loadHomePostalCode();
+    },
   },
   methods: {
+    async loadHomePostalCode() {
+      if (!this.authStore.ready) return;
+      const user = this.authStore.user;
+      if (!user) {
+        this.homePostalCode = null;
+        return;
+      }
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        this.homePostalCode = snap.exists() && snap.data().postalCode
+          ? snap.data().postalCode
+          : null;
+      } catch {
+        // silently ignore — button just won't show
+      }
+    },
     onInput(e) {
       this.inputValue = e.target.value;
       this.$emit('search', this.inputValue);
