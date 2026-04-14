@@ -1,6 +1,6 @@
 <template>
   <div class="details-page">
-    <LocationHeader :name="location.name" />
+    <LocationHeader :location="location" :facilityId="route.params.id" />
 
     <LocationInfoCard :location="location" />
 
@@ -14,7 +14,11 @@
       @vote="vote"
     />
 
-    <NavigationGuide :address="location.address" />
+    <NavigationGuide
+      :address="location.address"
+      :lat="location.lat"
+      :lng="location.lng"
+    />
     
     <ShareButton :name="location.name" />
   </div>

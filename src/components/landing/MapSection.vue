@@ -17,6 +17,7 @@ const props = defineProps({
 const center = { lat: 1.3651, lng: 103.8198 }
 const activeMarkerId = ref(null)
 const mapRef = ref(null)
+const mapsApiKey = 'AIzaSyD9UtjjBdWj_b5ScQvRRqPpWAaDgRexxhM'
 
 watch(() => props.locations, (locations) => {
   if (!mapRef.value?.map || locations.length === 0) return
@@ -43,7 +44,7 @@ const openInfoWindow = (id) => {
 <template>
   <GoogleMap
     ref="mapRef"
-    api-key="AIzaSyD_-r610v9OcV51HW_N1m9yNfjIBQhhNG4"
+    :api-key="mapsApiKey"
     style="width: 100%; height: 500px; border-radius: 12px;"
     :center="center"
     :zoom="11.5"
