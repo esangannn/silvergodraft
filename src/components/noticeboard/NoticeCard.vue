@@ -9,18 +9,16 @@
     <p>{{ notice.description }}</p>
     <div class="card-footer">
       <small>{{ notice.date }}</small>
-      <BaseButton label="View Details" variant="secondary" />
     </div>
   </div>
 </template>
 <script>
 import BaseIcon from '@/components/shared/BaseIcon.vue';
-import BaseButton from '@/components/shared/BaseButton.vue';
 import { AlertTriangle, Wrench, TrendingUp, Calendar } from 'lucide-vue-next';
 
 export default {
   name: 'NoticeCard',
-  components: { BaseIcon, BaseButton },
+  components: { BaseIcon },
   props: { notice: { type: Object, required: true } },
   computed: {
     icon() {

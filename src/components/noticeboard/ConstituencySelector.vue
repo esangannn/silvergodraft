@@ -1,20 +1,30 @@
 <template>
   <div class="select-card" aria-label="Select Constituency">
-    <label class="select-label">Select Constituency</label>
-    <input
+    <label for="constituency-select" class="select-label">Select Constituency</label>
+    <select
+      id="constituency-select"
       class="select-input"
-      type="text"
-      v-model="search"
-      placeholder="e.g., Ang Mo Kio, Bedok"
-      @keydown.enter="$emit('search', search)"
-    />
+      v-model="selected"
+      @change="$emit('search', selected)"
+    >
+      <option value="" disabled>Choose your constituency</option>
+      <option v-for="name in constituencies" :key="name" :value="name">
+        {{ name }}
+      </option>
+    </select>
   </div>
 </template>
 <script>
+import { CONSTITUENCY_NAMES } from '@/data/constituencies';
+
 export default {
   name: 'ConstituencySelector',
+  emits: ['search'],
   data() {
-    return { search: '' };
+    return {
+      selected: '',
+      constituencies: CONSTITUENCY_NAMES,
+    };
   },
 };
 </script>
@@ -47,9 +57,9 @@ export default {
   background: #fdfdfd;
   outline: none;
   font-weight: 700;
-}
-
-.select-input::placeholder{
-  color:#6f8fa9;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%2319345a' d='M6 8L0 0h12z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 1.2rem center;
 }
 </style>

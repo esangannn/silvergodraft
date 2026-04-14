@@ -1,8 +1,13 @@
 <template>
   <div id="app">
+    <NationwideAlertBanner />
     <router-view />
   </div>
 </template>
+
+<script setup>
+import NationwideAlertBanner from '@/components/shared/NationwideAlertBanner.vue';
+</script>
 
 <style scoped>
 #app {
