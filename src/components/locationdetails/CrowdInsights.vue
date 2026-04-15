@@ -39,36 +39,6 @@
         <div v-else class="medium-text">No votes in the past hour. Be the first to report!</div>
     </div>
 
-    <!-- placeholder predicted crowd chart -->
-    <div class="predicted-section">
-        <p class="sub-label">Predicted Crowd Today</p>
-
-        <div class="chart-area">
-            <div class="grid-lines">
-                <div data-value="100"></div>
-                <div data-value="75"></div>
-                <div data-value="50"></div>
-                <div data-value="25"></div>
-                <div data-value="0"></div>
-            </div>
-
-            <div class="bars-container">
-                <div v-for="point in data" :key="point.time" class="bar-wrapper">
-                    <div 
-                        class="bar" 
-                        :class="{ active: point.active }"
-                        :style="{ height: point.level + '%' }" 
-                    >
-                        <div v-if="point.active" class="tooltip">
-                            {{ point.time }} • Level {{ point.level }}
-                        </div>
-                    </div>
-                    <span class="time">{{ point.time }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="footer">
       <p class="sub-label">How crowded is it right now?</p>
       <p class="medium-text"> Help others by sharing the current crowd level.</p>
@@ -105,15 +75,6 @@ const badgeClass = computed(() => {
 
   return ''
 })
-
-const data = [
-  { time: '8 AM', level: 60 },
-  { time: '10 AM', level: 80 },
-  { time: '12 PM', level: 90, active: true },
-  { time: '2 PM', level: 70 },
-  { time: '4 PM', level: 45 },
-  { time: '6 PM', level: 30 },
-]
 
 </script>
 
@@ -228,98 +189,7 @@ const data = [
   background: #ef4444;
 }
 
-/* predicted chart */
-
-.predicted-section {
-  margin-top: 12px;
-}
-
-.chart-area {
-  position: relative;
-  height: 200px;           
-  margin-left: 40px;       
-  margin-bottom: 40px;     
-}
-
-.grid-lines {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.grid-lines div {
-  width: 100%;
-  border-top: 1px dashed #e2e8f0;
-  position: relative;
-}
-
-.grid-lines div::before {
-  content: attr(data-value);
-  position: absolute;
-  left: -35px;
-  top: -8px;
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.bars-container {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end;  
-  z-index: 1;
-}
-
-.bar-wrapper {
-  position: relative;
-  width: 40px;
-  height: 100%;           
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.bar {
-  width: 100%;
-  background: #60a5fa;
-  border-radius: 6px 6px 0 0;
-  transition: height 0.4s ease, background 0.2s;
-}
-
-.bar.active {
-  background: #3b82f6;
-}
-
-.time {
-  position: absolute;
-  top: 100%;
-  padding-top: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #94a3b8;
-  white-space: nowrap;
-}
-
-.tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  white-space: nowrap;
-  z-index: 10;
-}
-
-/* voting */ 
+/* voting */
 
 .btn-stack {
   display: flex;

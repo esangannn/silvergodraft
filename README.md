@@ -21,11 +21,28 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
+### 1. Install dependencies
+
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 2. Configure environment variables
+
+Copy the example file and fill in the real keys (request them privately from a teammate — never commit `.env`):
+
+```sh
+cp .env.example .env
+```
+
+Then open `.env` and replace each placeholder with the actual key.
+
+Required variables:
+
+- `VITE_MAPS_API_KEY` — Google Maps JavaScript / Embed API key
+- `VITE_FIREBASE_*` — Firebase web app config (apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId, measurementId)
+
+### 3. Compile and Hot-Reload for Development
 
 ```sh
 npm run dev

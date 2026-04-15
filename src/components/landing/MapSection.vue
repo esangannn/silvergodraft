@@ -17,7 +17,7 @@ const props = defineProps({
 const center = { lat: 1.3651, lng: 103.8198 }
 const activeMarkerId = ref(null)
 const mapRef = ref(null)
-const mapsApiKey = 'AIzaSyD9UtjjBdWj_b5ScQvRRqPpWAaDgRexxhM'
+const mapsApiKey = import.meta.env.VITE_MAPS_API_KEY
 
 watch(() => props.locations, (locations) => {
   if (!mapRef.value?.map || locations.length === 0) return

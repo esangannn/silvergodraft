@@ -116,7 +116,7 @@ const props = defineProps({
   lng: { type: Number, default: null },
 })
 
-const MAPS_EMBED_KEY = 'AIzaSyD9UtjjBdWj_b5ScQvRRqPpWAaDgRexxhM'
+const MAPS_EMBED_KEY = import.meta.env.VITE_MAPS_API_KEY
 
 const facilityStore = useFacilityStore()
 
@@ -144,10 +144,21 @@ const destinationParam = computed(() =>
     : props.address
 )
 
-const externalUrl = computed(
-  () =>
-    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationParam.value)}&travelmode=${mode.value}`
-)
+const externalUrl = computed(() => {
+  const base = 'https://www.google.com/maps/dir/?api=1'
+  const dest = `&destination=${encodeURIComponent(destinationParam.value)}`
+  const travel = `&travelmode=${mode.value}`
+
+  // Prefer the searched location so Google Maps opens with the same origin
+  // the user specified here, not their device's current location.
+  const searched = facilityStore.userLocation
+  const originStr = searched
+    ? `${searched.lat},${searched.lng}`
+    : origin.value
+
+  const orig = originStr ? `&origin=${encodeURIComponent(originStr)}` : ''
+  return `${base}${orig}${dest}${travel}`
+})
 
 const embedUrl = computed(() => {
   const base = 'https://www.google.com/maps/embed/v1'
