@@ -1,9 +1,5 @@
 <template>
   <header class="landing-header">
-    <button class="home-btn" type="button" aria-label="Home">
-      <Home :size="22" stroke-width="2" />
-    </button>
-
     <div class="actions">
       <button
         v-if="!user"
@@ -59,7 +55,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Home, Heart, User, ChevronDown } from 'lucide-vue-next'
+import { Heart, User, ChevronDown } from 'lucide-vue-next'
 import { auth } from '../../firebase.js'
 import { onAuthStateChanged } from 'firebase/auth'
 
@@ -105,21 +101,8 @@ function selectLocale(l) {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 0.9rem 0.25rem 0.75rem;
-}
-
-.home-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid #dce8f0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #173b65;
 }
 
 .actions {

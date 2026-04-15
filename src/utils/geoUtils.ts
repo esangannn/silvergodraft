@@ -48,6 +48,50 @@ export async function geocodePostalCode(postalCode: string): Promise<Coordinates
   }
 }
 
+export interface AddressSuggestion {
+  label: string;
+  coords: Coordinates;
+  postal?: string;
+}
+
+/**
+ * Fetches up to `limit` matching addresses from OneMap for a free-form query.
+ * Used to power the inline address autocomplete.
+ */
+export async function fetchAddressSuggestions(
+  query: string,
+  limit: number = 5
+): Promise<AddressSuggestion[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const response = await fetch(
+    `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(trimmed)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`
+  );
+  if (!response.ok) return [];
+  const data = await response.json();
+  if (!data || !Array.isArray(data.results)) return [];
+
+  return data.results.slice(0, limit).map((r: any) => {
+    const postal = r.POSTAL && r.POSTAL !== 'NIL' ? String(r.POSTAL) : undefined;
+    return {
+      label: r.ADDRESS || r.SEARCHVAL || '',
+      coords: { lat: parseFloat(r.LATITUDE), lng: parseFloat(r.LONGITUDE) },
+      postal,
+    };
+  });
+}
+
+/**
+ * Geocodes a free-form query (address, street name, landmark, building, or
+ * postal code) via OneMap. Returns null when no match is found.
+ */
+export async function geocodeQuery(query: string): Promise<Coordinates | null> {
+  const results = await fetchAddressSuggestions(query, 1);
+  const first = results[0];
+  return first ? first.coords : null;
+}
+
 /**
  * Calculates the Haversine distance between two coordinates in kilometers.
  */

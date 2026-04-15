@@ -13,6 +13,7 @@ import { ref } from 'vue';
 import { searchFacilities, type Facility } from '../services/facilityService';
 import {
   geocodePostalCode,
+  geocodeQuery,
   isValidSingaporePostalCode,
   type Coordinates,
 } from '../utils/geoUtils';
@@ -167,6 +168,34 @@ export const useFacilityStore = defineStore('facility', () => {
     await runSearch();
   }
 
+  /**
+   * Geocodes a free-form query (street address, landmark, building, etc.) via
+   * OneMap and runs a search around the resulting coordinates.
+   *
+   * @param query - Free-form address, street, or place name.
+   */
+  async function searchByAddress(query: string): Promise<void> {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const coords = await geocodeQuery(trimmed);
+      if (!coords) {
+        error.value = 'No matching location found. Try a different address.';
+        return;
+      }
+      userLocation.value = coords;
+      await runSearch();
+    } catch {
+      error.value = 'Failed to look up that address. Please try again.';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // ─── Expose ───────────────────────────────────────────────────────────────
 
   return {
@@ -187,6 +216,7 @@ export const useFacilityStore = defineStore('facility', () => {
     resetToAllPlaces,    // T03-04
     setWheelchairOnly,
     searchByPostalCode,
+    searchByAddress,
     setLocationAndSearch,
   };
 });

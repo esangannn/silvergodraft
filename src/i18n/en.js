@@ -9,7 +9,7 @@ export default {
   search: {
     title: 'Find Healthcare & Activities Near You',
     subtitle: 'Discover nearby healthcare facilities, community centres, and senior-friendly activities in your area.',
-    placeholder: 'Enter Postal Code',
+    placeholder: 'Enter postal code or address',
     useMyLocation: 'Use My Location',
     locating: 'Locating...',
     nearMyHome: 'Near My Home',
